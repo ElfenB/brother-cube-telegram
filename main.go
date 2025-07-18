@@ -13,6 +13,13 @@ import (
 )
 
 func main() {
+	// Add recovery for the main function
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Main function panic recovered: %v", r)
+		}
+	}()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -21,8 +28,12 @@ func main() {
 	// Add printer to context (simple approach)
 	ctx = context.WithValue(ctx, "printer", printer)
 
-	b := telegram.GetBot()
+	b := telegram.GetBot(ctx)
 
 	log.Println("Bot started successfully. Press Ctrl+C to stop.")
+
+	// Start the bot (this blocks until context is cancelled)
 	b.Start(ctx)
+
+	log.Println("Bot stopped gracefully.")
 }

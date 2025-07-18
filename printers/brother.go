@@ -2,6 +2,8 @@ package printers
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"os/exec"
 )
 
@@ -13,15 +15,15 @@ func NewPrinter() *Printer {
 	printer := &Printer{}
 
 	version := printer.GetVersion()
-	fmt.Printf("Printer version: %s\n", version)
+	log.Printf("Printer version: %s\n", version)
 
 	info, err := printer.GetPrinterInfo()
 	if err != nil {
-		fmt.Printf("Error getting printer info: %v\n", err)
+		log.Printf("Error getting printer info: %v\n", err)
 		return nil
 	}
 
-	fmt.Printf("Printer info: %s\n", info)
+	log.Printf("Printer info: %s\n", info)
 	return printer
 }
 
@@ -47,4 +49,31 @@ func (p *Printer) GetPrinterInfo() (string, error) {
 	}
 
 	return string(output), nil
+}
+
+func (p *Printer) PrintLabelYolo(label string) error {
+	cmd := exec.Command("ptouch-print", "--text", label, "--fontsize", "64")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error printing label: %v, output: %s", err, output)
+	}
+
+	log.Printf("Label printed successfully: %s\n", label)
+	return nil
+}
+
+func (p *Printer) PreviewLabel(label string) ([]byte, error) {
+	cmd := exec.Command("ptouch-print", "--text", label, "--writepng", "draft.png")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("error previewing label: %v, output: %s", err, output)
+	}
+
+	path := os.Getenv("HOME") + "/draft.png"
+	fileContent, _ := os.ReadFile(path)
+
+	log.Printf("Label previewed successfully: %s\n", label)
+	return fileContent, nil
 }

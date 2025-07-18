@@ -6,12 +6,9 @@ import (
 	"os"
 
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
-
-	"brother-cube-telegram/utils"
 )
 
-func GetBot() *bot.Bot {
+func GetBot(ctx context.Context) *bot.Bot {
 	// Get bot token from environment variable
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if token == "" {
@@ -19,7 +16,12 @@ func GetBot() *bot.Bot {
 	}
 
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handler),
+		bot.WithDefaultHandler(defaultHandler),
+		bot.WithMiddlewares(
+			recoveryMiddleware,
+			createMiddlewareWithCtxFactory(ctx, printerMiddlewareHandler),
+			loggingMiddleware,
+		),
 	}
 
 	b, err := bot.New(token, opts...)
@@ -27,36 +29,8 @@ func GetBot() *bot.Bot {
 		log.Fatal("Failed to create bot:", err)
 	}
 
+	b.RegisterHandler(bot.HandlerTypeMessageText, "status", bot.MatchTypeCommandStartOnly, statusHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "preview", bot.MatchTypeCommand, previewHandler)
+
 	return b
-}
-
-func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	log.Println("Received message:", update.Message.Text, "from", update.Message.From.Username)
-
-	// Get printer from context
-	printer := utils.GetPrinterFromContext(ctx)
-
-	if printer == nil {
-		log.Println("No printer found in context")
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   "Error: The printer is not available.",
-		})
-		return
-	}
-
-	version := printer.GetVersion()
-	log.Printf("Printer version: %s", version)
-
-	info, err := printer.GetPrinterInfo()
-	if err != nil {
-		log.Printf("Error getting printer info: %v", err)
-	} else {
-		log.Printf("Printer info: %s", info)
-	}
-
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
 }

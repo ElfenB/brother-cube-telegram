@@ -1,0 +1,39 @@
+version: "3"
+
+vars:
+  PI_HOST: "pizero.local"
+  PI_USER: "pi"
+  PI_PATH: "/home/{{.PI_USER}}"
+
+tasks:
+  build:
+    desc: Build the project
+    env:
+      GOOS: linux
+      GOARCH: arm
+      GOARM: 6
+    cmds:
+      - echo "Building for Raspberry Pi Zero W..."
+      - go build -o dist/brother-cube-telegram-pi .
+    silent: true
+
+  upload:
+    desc: Upload the binary to Raspberry Pi
+    cmds:
+      - echo "Uploading to Raspberry Pi..."
+      - scp ./dist/brother-cube-telegram-pi {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
+      - scp .env {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
+    silent: true
+
+  release:
+    desc: Build and upload the project to Raspberry Pi
+    deps:
+      - build
+    cmds:
+      - task: upload
+
+  run:
+    desc: Run the project
+    cmds:
+      - go run main.go
+    silent: true
