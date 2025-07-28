@@ -2,8 +2,8 @@ package printers
 
 import (
 	"brother-cube-telegram/gpio"
+	"brother-cube-telegram/logger"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"sync"
@@ -40,19 +40,19 @@ func NewPrinter(relay *gpio.Relay) *Printer {
 
 	// First ensure printer is on, then get version and info
 	if err := printer.ensurePrinterOn(); err != nil {
-		log.Printf("Warning: Could not ensure printer is on during initialization: %v", err)
+		logger.Warn("Could not ensure printer is on during initialization: %v", err)
 	}
 
 	version := printer.GetVersion()
-	log.Printf("Printer version: %s\n", version)
+	logger.Info("Printer version: %s", version)
 
 	info, err := printer.GetPrinterInfo()
 	if err != nil {
-		log.Printf("Error getting printer info: %v\n", err)
+		logger.Error("Error getting printer info: %v", err)
 		return nil
 	}
 
-	log.Printf("Printer info: %s\n", info)
+	logger.Info("Printer info: %s", info)
 	return printer
 }
 
@@ -62,9 +62,9 @@ func (p *Printer) autoShutdownRoutine() {
 		<-p.shutdownTimer.C
 		p.timerMutex.Lock()
 		if p.relay != nil && p.relay.GetState() {
-			log.Println("Auto-shutdown: Turning off printer after 5 minutes of inactivity")
+			logger.Info("Auto-shutdown: Turning off printer after 2 minutes of inactivity")
 			if err := p.relay.TurnOff(); err != nil {
-				log.Printf("Error during auto-shutdown: %v", err)
+				logger.Error("Error during auto-shutdown: %v", err)
 			}
 		}
 		p.timerMutex.Unlock()
@@ -160,7 +160,7 @@ func (p *Printer) PrintLabelYolo(label string) error {
 		return fmt.Errorf("error printing label: %v, output: %s", err, output)
 	}
 
-	log.Printf("Label printed successfully: %s\n", label)
+	logger.Info("Label printed successfully: %s", label)
 	return nil
 }
 
@@ -174,7 +174,7 @@ func (p *Printer) PreviewLabel(label string) ([]byte, error) {
 	path := os.Getenv("HOME") + "/draft.png"
 	fileContent, _ := os.ReadFile(path)
 
-	log.Printf("Label previewed successfully: %s\n", label)
+	logger.Info("Label previewed successfully: %s", label)
 	return fileContent, nil
 }
 
@@ -195,10 +195,10 @@ func (p *Printer) Close() error {
 	// Turn off the printer if it's on
 	if p.relay.GetState() {
 		if err := p.relay.TurnOff(); err != nil {
-			log.Printf("Error turning off printer during close: %v", err)
+			logger.Error("Error turning off printer during close: %v", err)
 			return err
 		}
-		log.Println("Printer turned off during shutdown")
+		logger.Info("Printer turned off during shutdown")
 	}
 
 	return nil
@@ -212,7 +212,7 @@ func (p *Printer) exec(arg ...string) (string, error) {
 	}
 
 	// Log the command being executed
-	log.Printf("Executing command: %s %v\n", print, arg)
+	logger.Debug("Executing command: %s %v", print, arg)
 
 	command := exec.Command(print, arg...)
 	output, err := command.CombinedOutput()
@@ -227,7 +227,7 @@ func (p *Printer) exec(arg ...string) (string, error) {
 // Used internally to avoid recursion when checking printer status
 func (p *Printer) execDirect(arg ...string) (string, error) {
 	// Log the command being executed
-	log.Printf("Executing command: %s %v\n", print, arg)
+	logger.Debug("Executing command: %s %v", print, arg)
 
 	command := exec.Command(print, arg...)
 	output, err := command.CombinedOutput()

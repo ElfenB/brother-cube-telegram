@@ -1,10 +1,10 @@
 package telegram
 
 import (
+	"brother-cube-telegram/logger"
 	"brother-cube-telegram/utils"
 	"bytes"
 	"context"
-	"log"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -13,7 +13,7 @@ import (
 func previewHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	// Safety checks
 	if update.Message == nil || update.Message.Text == "" {
-		log.Println("Preview handler: Invalid message")
+		logger.Warn("Preview handler: Invalid message")
 		return
 	}
 
@@ -42,7 +42,7 @@ func previewHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	img, err := printer.PreviewLabel(rawText)
 
 	if err != nil {
-		log.Printf("Error generating label preview: %v", err)
+		logger.Error("Error generating label preview: %v", err)
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "Error generating label preview: " + err.Error(),

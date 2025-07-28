@@ -2,9 +2,9 @@ package utils
 
 import (
 	"brother-cube-telegram/gpio"
+	"brother-cube-telegram/logger"
 	"brother-cube-telegram/printers"
 	"context"
-	"log"
 )
 
 const printerCtxKey string = "printer"
@@ -15,7 +15,7 @@ func GetPrinterFromContext(ctx context.Context) *printers.Printer {
 	if printer, ok := ctx.Value(printerCtxKey).(*printers.Printer); ok {
 		return printer
 	}
-	log.Println("Warning: Printer not found in context")
+	logger.Warn("Printer not found in context")
 	return nil
 }
 
@@ -24,6 +24,6 @@ func GetRelayFromContext(ctx context.Context) *gpio.Relay {
 	if relay, ok := ctx.Value(relayCtxKey).(*gpio.Relay); ok {
 		return relay
 	}
-	log.Println("Warning: Relay not found in context")
+	logger.Warn("Relay not found in context")
 	return nil
 }

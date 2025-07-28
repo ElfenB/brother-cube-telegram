@@ -2,28 +2,32 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 
 	_ "github.com/joho/godotenv/autoload"
 
 	"brother-cube-telegram/gpio"
+	"brother-cube-telegram/logger"
 	"brother-cube-telegram/printers"
 	"brother-cube-telegram/telegram"
 )
 
 func main() {
+	// Enable debug logging to see command executions
+	logger.SetLogLevel(logger.DEBUG)
+
 	// Add recovery for the main function
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Main function panic recovered: %v", r)
+			logger.Error("Main function panic recovered: %v", r)
 		}
 	}()
 
+	logger.Info("Testing relay on GPIO17...")
 	relay, err := gpio.NewRelay(17)
 	if err != nil {
-		log.Printf("Failed to initialize relay: %v", err)
+		logger.Error("Failed to initialize relay: %v", err)
 	} else {
 		defer relay.Close()
 	}
@@ -41,10 +45,10 @@ func main() {
 
 	b := telegram.GetBot(ctx)
 
-	log.Println("Bot started successfully. Press Ctrl+C to stop.")
+	logger.Info("Bot started successfully. Press Ctrl+C to stop.")
 
 	// Start the bot (this blocks until context is cancelled)
 	b.Start(ctx)
 
-	log.Println("Bot stopped gracefully.")
+	logger.Info("Bot stopped gracefully.")
 }

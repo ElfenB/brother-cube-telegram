@@ -1,8 +1,8 @@
 package telegram
 
 import (
+	"brother-cube-telegram/logger"
 	"context"
-	"log"
 	"runtime/debug"
 
 	"github.com/go-telegram/bot"
@@ -15,7 +15,7 @@ func recoveryMiddleware(next bot.HandlerFunc) bot.HandlerFunc {
 		defer func() {
 			if r := recover(); r != nil {
 				// Log the panic with stack trace
-				log.Printf("PANIC recovered: %v\nStack trace:\n%s", r, debug.Stack())
+				logger.Error("PANIC recovered: %v\nStack trace:\n%s", r, debug.Stack())
 
 				// Try to send a generic error message to the user
 				if update.Message != nil {
@@ -24,7 +24,7 @@ func recoveryMiddleware(next bot.HandlerFunc) bot.HandlerFunc {
 						Text:   "❌ An unexpected error occurred. The bot is still running and you can try again.",
 					})
 					if err != nil {
-						log.Printf("Failed to send error message after panic: %v", err)
+						logger.Error("Failed to send error message after panic: %v", err)
 					}
 				}
 			}

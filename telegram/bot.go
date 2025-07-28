@@ -1,8 +1,8 @@
 package telegram
 
 import (
+	"brother-cube-telegram/logger"
 	"context"
-	"log"
 	"os"
 
 	"github.com/go-telegram/bot"
@@ -12,7 +12,8 @@ func GetBot(ctx context.Context) *bot.Bot {
 	// Get bot token from environment variable
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if token == "" {
-		log.Fatal("TELEGRAM_BOT_TOKEN environment variable is required")
+		logger.Error("TELEGRAM_BOT_TOKEN environment variable is required")
+		os.Exit(1)
 	}
 
 	opts := []bot.Option{
@@ -26,7 +27,8 @@ func GetBot(ctx context.Context) *bot.Bot {
 
 	b, err := bot.New(token, opts...)
 	if err != nil {
-		log.Fatal("Failed to create bot:", err)
+		logger.Error("Failed to create bot: %v", err)
+		os.Exit(1)
 	}
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "status", bot.MatchTypeCommandStartOnly, statusHandler)

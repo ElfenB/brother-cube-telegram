@@ -1,9 +1,9 @@
 package telegram
 
 import (
+	"brother-cube-telegram/logger"
 	"brother-cube-telegram/utils"
 	"context"
-	"log"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -29,7 +29,7 @@ func printerMiddlewareHandler(mainCtx context.Context, next bot.HandlerFunc) bot
 				Text:   "❌ Printer is not available. Please check the printer connection.",
 			})
 			if err != nil {
-				log.Printf("Error sending printer unavailable message: %v", err)
+				logger.Error("Error sending printer unavailable message: %v", err)
 			}
 		}
 		// Don't proceed to handlers when printer is not available
