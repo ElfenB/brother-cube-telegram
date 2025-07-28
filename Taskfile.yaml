@@ -22,6 +22,7 @@ tasks:
     cmds:
       - echo "Uploading to Raspberry Pi..."
       - scp ./dist/brother-cube-telegram-pi {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
+      - scp config.yaml {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
       - scp .env {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
     silent: true
 
