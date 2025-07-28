@@ -20,6 +20,7 @@ func GetBot(ctx context.Context) *bot.Bot {
 		bot.WithDefaultHandler(defaultHandler),
 		bot.WithMiddlewares(
 			recoveryMiddleware,
+			authorizationMiddleware,
 			createMiddlewareWithCtxFactory(ctx, printerMiddlewareHandler),
 			loggingMiddleware,
 		),
