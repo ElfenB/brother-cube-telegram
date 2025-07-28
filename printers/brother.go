@@ -116,7 +116,7 @@ func (p *Printer) ensurePrinterOn() error {
 	if err != nil {
 		// Retry with increasing delay
 		for i := range p.config.Printer.RetryAttempts - 1 {
-			time.Sleep(time.Duration(i+5) * time.Second)
+			time.Sleep(p.config.Printer.GetRetryDelay(i))
 			_, err = p.execDirect(infoCmdArg)
 			if err == nil {
 				break // Successfully powered on
@@ -156,7 +156,8 @@ func (p *Printer) GetPrinterInfo() (string, error) {
 }
 
 func (p *Printer) PrintLabelYolo(label string) error {
-	output, err := p.exec(textCmdArg, label, fontSizeCmdArg, "64")
+	fontSize := fmt.Sprintf("%d", p.config.Printer.FontSize)
+	output, err := p.exec(textCmdArg, label, fontSizeCmdArg, fontSize)
 
 	if err != nil {
 		return fmt.Errorf("error printing label: %v, output: %s", err, output)
@@ -171,7 +172,7 @@ func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
 
 	// Ensure the drafts folder exists
 	if _, err := os.Stat(draftsFolder); os.IsNotExist(err) {
-		if err := os.MkdirAll(draftsFolder, 0755); err != nil {
+		if err := os.MkdirAll(draftsFolder, p.config.Printer.GetFolderPermissions()); err != nil {
 			return nil, fmt.Errorf("failed to create drafts folder: %v", err)
 		}
 		logger.Info("Created drafts folder: %s", draftsFolder)

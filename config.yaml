@@ -10,3 +10,20 @@ printer:
   # Path to store draft/preview images
   # Use ~ for home directory or absolute path
   drafts_folder: "~/drafts"
+
+  # Font size for label printing (default: 64)
+  font_size: 64
+
+  # Base delay in seconds for retries (will be multiplied by attempt number + this value)
+  retry_base_delay_seconds: 5
+
+  # File permissions for created directories (octal, e.g., 0755)
+  folder_permissions: 0755
+
+gpio:
+  # GPIO pin number for the relay (Raspberry Pi GPIO pin)
+  relay_pin: 17
+
+logging:
+  # Log level: DEBUG, INFO, WARN, ERROR
+  level: "DEBUG"

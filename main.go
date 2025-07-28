@@ -15,15 +15,16 @@ import (
 )
 
 func main() {
-	// Enable debug logging to see command executions
-	logger.SetLogLevel(logger.DEBUG)
-
 	// Load configuration
 	if err := config.LoadDefault(); err != nil {
 		logger.Error("Failed to load configuration: %v", err)
 		return
 	}
 	logger.Info("Configuration loaded successfully")
+
+	// Set log level from configuration
+	cfg := config.Get()
+	logger.SetLogLevel(cfg.Logging.GetLogLevel())
 
 	// Add recovery for the main function
 	defer func() {
@@ -32,8 +33,8 @@ func main() {
 		}
 	}()
 
-	logger.Info("Testing relay on GPIO17...")
-	relay, err := gpio.NewRelay(17)
+	logger.Info("Testing relay on GPIO%d...", cfg.GPIO.RelayPin)
+	relay, err := gpio.NewRelay(cfg.GPIO.RelayPin)
 	if err != nil {
 		logger.Error("Failed to initialize relay: %v", err)
 	} else {

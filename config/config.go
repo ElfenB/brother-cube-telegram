@@ -1,6 +1,7 @@
 package config
 
 import (
+	"brother-cube-telegram/logger"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,8 @@ import (
 // Holds all configuration values for the application
 type Config struct {
 	Printer PrinterConfig `yaml:"printer"`
+	GPIO    GPIOConfig    `yaml:"gpio"`
+	Logging LoggingConfig `yaml:"logging"`
 }
 
 // Holds printer-specific configuration
@@ -25,6 +28,27 @@ type PrinterConfig struct {
 
 	// Path to store draft/preview images
 	DraftsFolder string `yaml:"drafts_folder"`
+
+	// Font size for label printing
+	FontSize int `yaml:"font_size"`
+
+	// Base delay in seconds for retries
+	RetryBaseDelaySeconds int `yaml:"retry_base_delay_seconds"`
+
+	// File permissions for created directories (octal)
+	FolderPermissions int `yaml:"folder_permissions"`
+}
+
+// GPIOConfig holds GPIO-specific configuration
+type GPIOConfig struct {
+	// GPIO pin number for the relay
+	RelayPin int `yaml:"relay_pin"`
+}
+
+// LoggingConfig holds logging-specific configuration
+type LoggingConfig struct {
+	// Log level: DEBUG, INFO, WARN, ERROR
+	Level string `yaml:"level"`
 }
 
 // Global config instance
@@ -59,6 +83,32 @@ func Get() *Config {
 // Returns the auto-shutdown delay as a time.Duration
 func (p *PrinterConfig) GetAutoShutdownDelay() time.Duration {
 	return time.Duration(p.AutoShutdownDelayMinutes) * time.Minute
+}
+
+// Returns the retry delay for a given attempt number
+func (p *PrinterConfig) GetRetryDelay(attemptNumber int) time.Duration {
+	return time.Duration(attemptNumber+p.RetryBaseDelaySeconds) * time.Second
+}
+
+// Returns the folder permissions as os.FileMode
+func (p *PrinterConfig) GetFolderPermissions() os.FileMode {
+	return os.FileMode(p.FolderPermissions)
+}
+
+// Returns the logger.LogLevel from the string configuration
+func (l *LoggingConfig) GetLogLevel() logger.LogLevel {
+	switch strings.ToUpper(l.Level) {
+	case "DEBUG":
+		return logger.DEBUG
+	case "INFO":
+		return logger.INFO
+	case "WARN":
+		return logger.WARN
+	case "ERROR":
+		return logger.ERROR
+	default:
+		return logger.INFO // Default to INFO if invalid level
+	}
 }
 
 // Expands ~ to the user's home directory
