@@ -98,17 +98,15 @@ func (p *Printer) ensurePrinterOn() error {
 		return nil
 	}
 
-	// Check if relay is already on
 	if p.relay.GetState() {
 		// Relay is already on, printer should be powered
 		// Reset the auto-shutdown timer since we're using the printer
 		p.resetAutoShutdownTimer()
-		return nil
-	}
-
-	// Turn on the relay to power the printer
-	if err := p.relay.TurnOn(); err != nil {
-		return fmt.Errorf("failed to turn on printer via relay: %v", err)
+	} else {
+		err := p.relay.TurnOn()
+		if err != nil {
+			return fmt.Errorf("failed to turn on printer via relay: %v", err)
+		}
 	}
 
 	// Check via the printer info command if it responds
@@ -122,13 +120,14 @@ func (p *Printer) ensurePrinterOn() error {
 				break // Successfully powered on
 			}
 		}
-		return fmt.Errorf("printer did not respond after turning on: %v", err)
+		if err != nil {
+			// If still not responding, return an error
+			return fmt.Errorf("printer did not respond after turning on: %v", err)
+		}
 	}
 
 	// Start the auto-shutdown timer since we just turned on the printer
 	p.resetAutoShutdownTimer()
-
-	log.Println("Printer powered on via relay")
 	return nil
 }
 
