@@ -12,7 +12,7 @@ import (
 
 const print = "ptouch-print"
 const printerPowerErrorMsg = "failed to ensure printer is on: %v"
-const autoShutdownDelay = 5 * time.Minute
+const autoShutdownDelay = 2 * time.Minute
 const retryConnectionAttempts = 5
 
 type Printer struct {
@@ -36,6 +36,11 @@ func NewPrinter(relay *gpio.Relay) *Printer {
 	// Start the auto-shutdown goroutine if relay is available
 	if relay != nil {
 		go printer.autoShutdownRoutine()
+	}
+
+	// First ensure printer is on, then get version and info
+	if err := printer.ensurePrinterOn(); err != nil {
+		log.Printf("Warning: Could not ensure printer is on during initialization: %v", err)
 	}
 
 	version := printer.GetVersion()
@@ -107,12 +112,12 @@ func (p *Printer) ensurePrinterOn() error {
 	}
 
 	// Check via the printer info command if it responds
-	_, err := p.exec("--info")
+	_, err := p.execDirect(infoCmdArg)
 	if err != nil {
 		// Retry with increasing delay
 		for i := range retryConnectionAttempts - 1 {
-			time.Sleep(time.Duration(i+2) * time.Second)
-			_, err = p.exec("--info")
+			time.Sleep(time.Duration(i+5) * time.Second)
+			_, err = p.execDirect(infoCmdArg)
 			if err == nil {
 				break // Successfully powered on
 			}
@@ -140,7 +145,7 @@ func (p *Printer) GetVersion() string {
 
 // Returns information about the printer
 func (p *Printer) GetPrinterInfo() (string, error) {
-	output, err := p.exec("--info")
+	output, err := p.exec(infoCmdArg)
 
 	if err != nil {
 		return "", err
@@ -150,7 +155,7 @@ func (p *Printer) GetPrinterInfo() (string, error) {
 }
 
 func (p *Printer) PrintLabelYolo(label string) error {
-	output, err := p.exec("--text", label, "--fontsize", "64")
+	output, err := p.exec(textCmdArg, label, fontSizeCmdArg, "64")
 
 	if err != nil {
 		return fmt.Errorf("error printing label: %v, output: %s", err, output)
@@ -161,7 +166,7 @@ func (p *Printer) PrintLabelYolo(label string) error {
 }
 
 func (p *Printer) PreviewLabel(label string) ([]byte, error) {
-	output, err := p.exec("--text", label, "--writepng", "draft.png")
+	output, err := p.exec(textCmdArg, label, writePngCmdArg, "draft.png")
 
 	if err != nil {
 		return nil, fmt.Errorf("error previewing label: %v, output: %s", err, output)
@@ -214,6 +219,21 @@ func (p *Printer) exec(arg ...string) (string, error) {
 	output, err := command.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("error executing command '%s': %v, output: %s", arg, err, output)
+	}
+
+	return string(output), nil
+}
+
+// Executes a command on the printer directly without ensuring power-on
+// Used internally to avoid recursion when checking printer status
+func (p *Printer) execDirect(arg ...string) (string, error) {
+	// Log the command being executed
+	log.Printf("Executing command: %s %v\n", print, arg)
+
+	command := exec.Command(print, arg...)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error executing command '%v': %v, output: %s", arg, err, output)
 	}
 
 	return string(output), nil
