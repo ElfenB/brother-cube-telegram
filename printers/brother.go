@@ -157,7 +157,7 @@ func (p *Printer) GetPrinterInfo() (string, error) {
 
 func (p *Printer) PrintLabelYolo(label string) error {
 	fontSize := fmt.Sprintf("%d", p.config.Printer.FontSize)
-	output, err := p.exec(textCmdArg, label, fontSizeCmdArg, fontSize)
+	output, err := p.exec(fontSizeCmdArg, fontSize, textCmdArg, label)
 
 	if err != nil {
 		return fmt.Errorf("error printing label: %v, output: %s", err, output)
