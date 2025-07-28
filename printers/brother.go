@@ -164,15 +164,30 @@ func (p *Printer) PrintLabelYolo(label string) error {
 	return nil
 }
 
-func (p *Printer) PreviewLabel(label string) ([]byte, error) {
-	output, err := p.exec(textCmdArg, label, writePngCmdArg, "draft.png")
+func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
+	draftsFolder := os.Getenv("HOME") + "/drafts"
+
+	// Ensure the drafts folder exists
+	if _, err := os.Stat(draftsFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(draftsFolder, 0755); err != nil {
+			return nil, fmt.Errorf("failed to create drafts folder: %v", err)
+		}
+		logger.Info("Created drafts folder: %s", draftsFolder)
+	}
+
+	// Construct the filePath name based on user identifier (e.g. draft-23479234.png)
+	filePath := fmt.Sprintf("%s/draft-%d.png", draftsFolder, userIdent)
+
+	output, err := p.exec(textCmdArg, label, writePngCmdArg, filePath)
 
 	if err != nil {
 		return nil, fmt.Errorf("error previewing label: %v, output: %s", err, output)
 	}
 
-	path := os.Getenv("HOME") + "/draft.png"
-	fileContent, _ := os.ReadFile(path)
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading label preview file: %v", err)
+	}
 
 	logger.Info("Label previewed successfully: %s", label)
 	return fileContent, nil

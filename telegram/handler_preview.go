@@ -39,7 +39,7 @@ func previewHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		return
 	}
 
-	img, err := printer.PreviewLabel(rawText)
+	img, err := printer.PreviewLabel(rawText, update.Message.From.ID)
 
 	if err != nil {
 		logger.Error("Error generating label preview: %v", err)
