@@ -1,6 +1,7 @@
 package printers
 
 import (
+	"brother-cube-telegram/config"
 	"brother-cube-telegram/gpio"
 	"brother-cube-telegram/logger"
 	"fmt"
@@ -11,11 +12,9 @@ import (
 )
 
 const print = "ptouch-print"
-const printerPowerErrorMsg = "failed to ensure printer is on: %v"
-const autoShutdownDelay = 2 * time.Minute
-const retryConnectionAttempts = 5
 
 type Printer struct {
+	config        *config.Config
 	relay         *gpio.Relay
 	shutdownTimer *time.Timer
 	timerMutex    sync.Mutex
@@ -25,9 +24,12 @@ type Printer struct {
 // Can be used to initialize the printer and check its status
 // Takes an optional relay for automatic printer power management
 func NewPrinter(relay *gpio.Relay) *Printer {
+	cfg := config.Get()
+
 	printer := &Printer{
+		config:        cfg,
 		relay:         relay,
-		shutdownTimer: time.NewTimer(autoShutdownDelay),
+		shutdownTimer: time.NewTimer(cfg.Printer.GetAutoShutdownDelay()),
 	}
 
 	// Stop the initial timer since we haven't started the printer yet
@@ -62,7 +64,7 @@ func (p *Printer) autoShutdownRoutine() {
 		<-p.shutdownTimer.C
 		p.timerMutex.Lock()
 		if p.relay != nil && p.relay.GetState() {
-			logger.Info("Auto-shutdown: Turning off printer after 2 minutes of inactivity")
+			logger.Info("Auto-shutdown: Turning off printer after %d minutes of inactivity", p.config.Printer.AutoShutdownDelayMinutes)
 			if err := p.relay.TurnOff(); err != nil {
 				logger.Error("Error during auto-shutdown: %v", err)
 			}
@@ -71,7 +73,7 @@ func (p *Printer) autoShutdownRoutine() {
 	}
 }
 
-// Resets the 5-minute countdown timer
+// Resets the auto-shutdown countdown timer
 func (p *Printer) resetAutoShutdownTimer() {
 	if p.relay == nil {
 		return // No auto-shutdown if no relay
@@ -88,7 +90,7 @@ func (p *Printer) resetAutoShutdownTimer() {
 		default:
 		}
 	}
-	p.shutdownTimer.Reset(autoShutdownDelay)
+	p.shutdownTimer.Reset(p.config.Printer.GetAutoShutdownDelay())
 }
 
 // Ensures the printer is powered on via the relay if available
@@ -113,7 +115,7 @@ func (p *Printer) ensurePrinterOn() error {
 	_, err := p.execDirect(infoCmdArg)
 	if err != nil {
 		// Retry with increasing delay
-		for i := range retryConnectionAttempts - 1 {
+		for i := range p.config.Printer.RetryAttempts - 1 {
 			time.Sleep(time.Duration(i+5) * time.Second)
 			_, err = p.execDirect(infoCmdArg)
 			if err == nil {
@@ -165,7 +167,7 @@ func (p *Printer) PrintLabelYolo(label string) error {
 }
 
 func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
-	draftsFolder := os.Getenv("HOME") + "/drafts"
+	draftsFolder := p.config.Printer.DraftsFolder
 
 	// Ensure the drafts folder exists
 	if _, err := os.Stat(draftsFolder); os.IsNotExist(err) {
@@ -223,7 +225,7 @@ func (p *Printer) Close() error {
 // Returns an error if the printer is not powered on
 func (p *Printer) exec(arg ...string) (string, error) {
 	if err := p.ensurePrinterOn(); err != nil {
-		return "", fmt.Errorf(printerPowerErrorMsg, err)
+		return "", fmt.Errorf("failed to ensure printer is on: %v", err)
 	}
 
 	// Log the command being executed

@@ -1,0 +1,12 @@
+# Brother Cube Telegram Bot Configuration
+
+printer:
+  # Number of retry attempts when connecting to printer
+  retry_attempts: 5
+
+  # Auto-shutdown delay in minutes (how long to wait before turning off printer)
+  auto_shutdown_delay_minutes: 1
+
+  # Path to store draft/preview images
+  # Use ~ for home directory or absolute path
+  drafts_folder: "~/drafts"

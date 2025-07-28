@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	"brother-cube-telegram/config"
 	"brother-cube-telegram/gpio"
 	"brother-cube-telegram/logger"
 	"brother-cube-telegram/printers"
@@ -16,6 +17,13 @@ import (
 func main() {
 	// Enable debug logging to see command executions
 	logger.SetLogLevel(logger.DEBUG)
+
+	// Load configuration
+	if err := config.LoadDefault(); err != nil {
+		logger.Error("Failed to load configuration: %v", err)
+		return
+	}
+	logger.Info("Configuration loaded successfully")
 
 	// Add recovery for the main function
 	defer func() {
