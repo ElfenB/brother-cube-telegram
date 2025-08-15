@@ -24,3 +24,30 @@ Or create a `.env` file (copy from `.env.example`) and load it before running
 ```bash
 go run main.go
 ```
+
+## Deployment
+
+For easier management, you can use `taskfile` to run tasks. To install it, follow the instructions in their [documentation](https://taskfile.dev/docs/installation).
+
+If you don't want to use it, you can run the tasks manually.
+
+The `Taskfile.yaml` defines tasks for building, uploading, and managing the service on the Raspberry Pi.
+
+To configure the settings for your host, modify the vars on top of the `Taskfile.yaml`.
+
+```bash
+# See available tasks
+task
+```
+
+To start the service immediately, run:
+
+```bash
+sudo systemctl start brother-cube-telegram-pi.service
+```
+
+To activate the service on boot, run:
+
+```bash
+task activate-service
+```

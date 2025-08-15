@@ -1,0 +1,14 @@
+[Unit]
+Description=Brother Cube Telegram Bot
+After=network-online.target
+
+[Service]
+ExecStart=/home/pi/brother-cube-telegram-pi
+WorkingDirectory=/home/pi/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
