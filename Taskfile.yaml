@@ -23,6 +23,7 @@ tasks:
       - echo "Uploading to Raspberry Pi..."
       - scp ./dist/brother-cube-telegram-pi config.yaml .env brother-cube-telegram.service {{.PI_USER}}@{{.PI_HOST}}:{{.PI_PATH}}
       - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo cp {{.PI_PATH}}/brother-cube-telegram.service /lib/systemd/system/" # Copy service file with root
+      - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo systemctl daemon-reload"
     silent: true
 
   release:
@@ -30,7 +31,9 @@ tasks:
     deps:
       - build
     cmds:
+      - task: stop-service
       - task: upload
+      - task: start-service
 
   run:
     desc: Run the project
@@ -42,6 +45,18 @@ tasks:
     desc: Activate service to run on boot
     cmds:
       - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo systemctl enable brother-cube-telegram.service" && echo "Service activated to run on boot."
+
+  start-service:
+    desc: Start the service
+    cmds:
+      - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo systemctl start brother-cube-telegram.service" && echo "Service started."
+    silent: true
+
+  stop-service:
+    desc: Stop the service
+    cmds:
+      - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo systemctl stop brother-cube-telegram.service" && echo "Service stopped."
+    silent: true
 
   configure-gpio:
     desc: Configure GPIO 17 as output high for relay control
