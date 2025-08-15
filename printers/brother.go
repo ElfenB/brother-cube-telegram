@@ -167,6 +167,18 @@ func (p *Printer) PrintLabelYolo(label string) error {
 	return nil
 }
 
+func (p *Printer) PrintLabel(label string, fontSize int) error {
+	fontSizeStr := fmt.Sprintf("%d", fontSize)
+	output, err := p.exec(fontSizeCmdArg, fontSizeStr, textCmdArg, label)
+
+	if err != nil {
+		return fmt.Errorf("error printing label: %v, output: %s", err, output)
+	}
+
+	logger.Info("Label printed successfully: %s", label)
+	return nil
+}
+
 func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
 	draftsFolder := p.config.Printer.DraftsFolder
 
@@ -181,7 +193,7 @@ func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
 	// Construct the filePath name based on user identifier (e.g. draft-23479234.png)
 	filePath := fmt.Sprintf("%s/draft-%d.png", draftsFolder, userIdent)
 
-	output, err := p.exec(textCmdArg, label, writePngCmdArg, filePath)
+	output, err := p.exec(fontSizeCmdArg, fmt.Sprintf("%d", p.config.Printer.FontSize), textCmdArg, label, writePngCmdArg, filePath)
 
 	if err != nil {
 		return nil, fmt.Errorf("error previewing label: %v, output: %s", err, output)

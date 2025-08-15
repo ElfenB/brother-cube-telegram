@@ -34,6 +34,10 @@ func GetBot(ctx context.Context) *bot.Bot {
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "status", bot.MatchTypeCommandStartOnly, statusHandler)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "preview", bot.MatchTypeCommand, previewHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "size", bot.MatchTypeCommandStartOnly, sizeHandler)
+
+	// Register handler for unknown commands (any command that starts with /)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/", bot.MatchTypePrefix, unknownCommandHandler)
 
 	return b
 }
