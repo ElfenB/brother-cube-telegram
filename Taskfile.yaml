@@ -42,3 +42,21 @@ tasks:
     desc: Activate service to run on boot
     cmds:
       - ssh {{.PI_USER}}@{{.PI_HOST}} "sudo systemctl enable brother-cube-telegram.service" && echo "Service activated to run on boot."
+
+  configure-gpio:
+    desc: Configure GPIO 17 as output high for relay control
+    cmds:
+      - echo "Checking GPIO configuration..."
+      - |
+        ssh {{.PI_USER}}@{{.PI_HOST}} "
+          if grep -q 'gpio=17=op,dh' /boot/firmware/config.txt; then
+            echo 'GPIO 17 output high is already configured in /boot/firmware/config.txt'
+          else
+            echo 'Adding GPIO 17 output high configuration to /boot/firmware/config.txt...'
+            echo '' | sudo tee -a /boot/firmware/config.txt
+            echo '# GPIO Configuration for Brother Cube Telegram Bot Relay' | sudo tee -a /boot/firmware/config.txt
+            echo 'gpio=17=op,dh' | sudo tee -a /boot/firmware/config.txt
+            echo 'GPIO 17 configured as output high (relay off). Reboot required to take effect.'
+          fi
+        "
+    silent: true
