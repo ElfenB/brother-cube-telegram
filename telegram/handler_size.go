@@ -48,7 +48,7 @@ func sizeHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	printer := utils.GetPrinterFromContext(ctx)
 
 	fontSize := strings.Split(update.Message.Text, " ")[1]
-	label := strings.Join(strings.Split(update.Message.Text, " ")[2:], " ")
+	label := strings.TrimSpace(strings.Join(strings.Split(update.Message.Text, " ")[2:], " "))
 
 	// Try to convert fontSize to int
 	fontSizeInt, err := strconv.Atoi(fontSize)
