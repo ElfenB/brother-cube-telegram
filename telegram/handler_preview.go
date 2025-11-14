@@ -5,6 +5,7 @@ import (
 	"brother-cube-telegram/utils"
 	"bytes"
 	"context"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -17,24 +18,25 @@ func previewHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		return
 	}
 
-	// Check if message is long enough to contain "preview" command
-	if len(update.Message.Text) < 8 {
+	printer := utils.GetPrinterFromContext(ctx)
+
+	// Parse command arguments
+	parts := strings.SplitN(strings.TrimSpace(update.Message.Text), " ", 2)
+
+	if len(parts) < 2 {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "Usage: /preview <text to preview>",
+			Text:   GetCommandUsageMessage("preview"),
 		})
 		return
 	}
 
-	printer := utils.GetPrinterFromContext(ctx)
-
-	// Remove the "/preview " command from the message text (9 characters)
-	rawText := update.Message.Text[9:]
+	rawText := strings.TrimSpace(parts[1])
 
 	if rawText == "" {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "Usage: /preview <text to preview>",
+			Text:   GetCommandUsageMessageWithError("preview", "Text cannot be empty."),
 		})
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"brother-cube-telegram/logger"
 	"brother-cube-telegram/utils"
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -47,8 +48,27 @@ func sizeHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	printer := utils.GetPrinterFromContext(ctx)
 
-	fontSize := strings.Split(update.Message.Text, " ")[1]
-	label := strings.TrimSpace(strings.Join(strings.Split(update.Message.Text, " ")[2:], " "))
+	// Parse command arguments
+	parts := strings.Split(update.Message.Text, " ")
+
+	if len(parts) < 2 {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   GetCommandUsageMessage("size"),
+		})
+		return
+	}
+
+	if len(parts) < 3 {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   GetCommandUsageMessageWithError("size", "Missing text to print."),
+		})
+		return
+	}
+
+	fontSize := parts[1]
+	label := strings.TrimSpace(strings.Join(parts[2:], " "))
 
 	// Try to convert fontSize to int
 	fontSizeInt, err := strconv.Atoi(fontSize)
@@ -56,7 +76,7 @@ func sizeHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		logger.Error("Invalid font size: %v", err)
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "❌ Invalid font size. Please provide a valid number.",
+			Text:   GetCommandUsageMessageWithError("size", fmt.Sprintf("Invalid font size '%s'. Please provide a valid number.", fontSize)),
 		})
 		return
 	}
@@ -65,7 +85,7 @@ func sizeHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		logger.Error("Label is empty")
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "❌ Label is empty. Please provide a valid label after the size information.",
+			Text:   GetCommandUsageMessageWithError("size", "Label is empty. Please provide a valid label after the size information."),
 		})
 		return
 	}

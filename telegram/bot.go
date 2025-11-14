@@ -3,6 +3,7 @@ package telegram
 import (
 	"brother-cube-telegram/logger"
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/go-telegram/bot"
@@ -103,6 +104,22 @@ func GetBot(ctx context.Context) *bot.Bot {
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/", bot.MatchTypePrefix, unknownCommandHandler)
 
 	return b
+}
+
+// Returns a formatted usage message for a command
+func GetCommandUsageMessage(command string) string {
+	if cmdInfo, exists := commandRegistry[command]; exists {
+		return fmt.Sprintf("❌ Usage: %s\n\nExample: %s\n\n%s", cmdInfo.Usage, cmdInfo.Example, cmdInfo.Description)
+	}
+	return fmt.Sprintf("❌ Usage information not available for /%s", command)
+}
+
+// Returns a formatted usage message with a custom error prefix
+func GetCommandUsageMessageWithError(command string, errorMsg string) string {
+	if cmdInfo, exists := commandRegistry[command]; exists {
+		return fmt.Sprintf("❌ %s\n\nUsage: %s\nExample: %s\n\n%s", errorMsg, cmdInfo.Usage, cmdInfo.Example, cmdInfo.Description)
+	}
+	return fmt.Sprintf("❌ %s\n\nUsage information not available for /%s", errorMsg, command)
 }
 
 // registerCommandHandler registers a command handler and ensures it exists in the registry

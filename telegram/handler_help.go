@@ -55,10 +55,8 @@ func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	message.WriteString("📝 Tips:\n")
 	message.WriteString("• Use /preset without arguments to see available presets\n")
-	message.WriteString("• Font sizes typically range from 12-96 points\n")
 	message.WriteString("• Preview your labels before printing to save tape\n")
 	message.WriteString("• The bot will automatically manage printer power\n\n")
-	message.WriteString("Need more help? Check the printer status with /status")
 
 	// Send the help message
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{

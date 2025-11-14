@@ -56,7 +56,7 @@ func presetHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if len(parts) < 3 {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   "❌ Usage: /preset <preset_name> <text_to_print>\n\nExample: /preset kitchen my text",
+			Text:   GetCommandUsageMessageWithError("preset", "Missing text to print."),
 		})
 		return
 	}
