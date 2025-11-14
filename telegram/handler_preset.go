@@ -124,18 +124,26 @@ func sendPresetUsage(ctx context.Context, b *bot.Bot, chatID int64) {
 			if preset.FontFamily != "" {
 				fontInfo += fmt.Sprintf(", font: %s", preset.FontFamily)
 			}
-			message.WriteString(fmt.Sprintf("• **%s** - %s (%s)\n", name, preset.Description, fontInfo))
+			message.WriteString(fmt.Sprintf("• %s - %s (%s)\n", name, preset.Description, fontInfo))
 		}
 	}
 
-	message.WriteString("\n💡 Usage: `/preset <preset_name> <text_to_print>`\n")
-	message.WriteString("Example: `/preset kitchen my text`")
+	message.WriteString("\n💡 Usage: /preset <preset_name> <text_to_print>\n")
+	message.WriteString("Example: /preset kitchen my text")
 
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    chatID,
-		Text:      message.String(),
-		ParseMode: models.ParseModeMarkdown,
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: chatID,
+		Text:   message.String(),
 	})
+
+	if err != nil {
+		logger.Error("Failed to send preset usage message: %v", err)
+		// Send a simple fallback message
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "❌ Failed to load preset list. Use /help for available commands.",
+		})
+	}
 }
 
 func sendPresetNotFound(ctx context.Context, b *bot.Bot, chatID int64, presetName string) {
@@ -150,14 +158,22 @@ func sendPresetNotFound(ctx context.Context, b *bot.Bot, chatID int64, presetNam
 		for _, name := range presetNames {
 			preset := cfg.Printer.GetPreset(name)
 			if preset != nil {
-				message.WriteString(fmt.Sprintf("• **%s** - %s\n", name, preset.Description))
+				message.WriteString(fmt.Sprintf("• %s - %s\n", name, preset.Description))
 			}
 		}
 	}
 
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    chatID,
-		Text:      message.String(),
-		ParseMode: models.ParseModeMarkdown,
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: chatID,
+		Text:   message.String(),
 	})
+
+	if err != nil {
+		logger.Error("Failed to send preset not found message: %v", err)
+		// Send a simple fallback message
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   fmt.Sprintf("❌ Preset '%s' not found. Use /help for available commands.", presetName),
+		})
+	}
 }
