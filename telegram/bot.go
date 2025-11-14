@@ -25,6 +25,12 @@ var commandRegistry = map[string]CommandInfo{
 		Usage:       "/help",
 		Example:     "/help",
 	},
+	"start": {
+		Command:     "/start",
+		Description: "Show this help message with all available commands (same as /help)",
+		Usage:       "/start",
+		Example:     "/start",
+	},
 	"status": {
 		Command:     "/status",
 		Description: "Get current printer status and information",
@@ -101,6 +107,7 @@ func GetBot(ctx context.Context) *bot.Bot {
 
 	// Register handlers using the command registry
 	registerCommandHandler(b, "help", bot.MatchTypeCommandStartOnly, helpHandler)
+	registerCommandHandler(b, "start", bot.MatchTypeCommandStartOnly, helpHandler) // Alias for help
 	registerCommandHandler(b, "status", bot.MatchTypeCommandStartOnly, statusHandler)
 	registerCommandHandler(b, "preview", bot.MatchTypeCommand, previewHandler)
 	registerCommandHandler(b, "size", bot.MatchTypeCommandStartOnly, sizeHandler)
