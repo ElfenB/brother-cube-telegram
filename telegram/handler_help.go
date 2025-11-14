@@ -37,9 +37,33 @@ func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		return
 	}
 
+	// Parse the command: /help [command_name]
+	parts := strings.SplitN(strings.TrimSpace(update.Message.Text), " ", 2)
+
 	logger.Info("Help requested by %s", update.Message.From.Username)
 
-	// Build the help message
+	// Check if specific command help was requested
+	if len(parts) > 1 {
+		commandName := strings.TrimSpace(parts[1])
+		// Remove leading slash unconditionally
+		commandName = strings.TrimPrefix(commandName, "/")
+
+		logger.Debug("Specific help requested for command: %s", commandName)
+
+		// Send specific command help
+		helpText := GetCommandUsageMessage(commandName)
+		_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   helpText,
+		})
+
+		if err != nil {
+			logger.Error("Failed to send specific command help: %v", err)
+		}
+		return
+	}
+
+	// Build the general help message
 	var message strings.Builder
 	message.WriteString("🤖 Brother Cube Telegram Bot Help\n\n")
 	message.WriteString("Available commands:\n\n")
@@ -56,7 +80,8 @@ func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	message.WriteString("📝 Tips:\n")
 	message.WriteString("• Use /preset without arguments to see available presets\n")
 	message.WriteString("• Preview your labels before printing to save tape\n")
-	message.WriteString("• The bot will automatically manage printer power\n\n")
+	message.WriteString("• The bot will automatically manage printer power\n")
+	message.WriteString("• Use '/help <command>' for detailed help on a specific command\n\n")
 
 	// Send the help message
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{

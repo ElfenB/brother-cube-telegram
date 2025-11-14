@@ -21,15 +21,15 @@ type CommandInfo struct {
 var commandRegistry = map[string]CommandInfo{
 	"help": {
 		Command:     "/help",
-		Description: "Show this help message with all available commands",
-		Usage:       "/help",
-		Example:     "/help",
+		Description: "Show this help message with all available commands, or detailed help for a specific command",
+		Usage:       "/help [command]",
+		Example:     "/help preview",
 	},
 	"start": {
 		Command:     "/start",
-		Description: "Show this help message with all available commands (same as /help)",
-		Usage:       "/start",
-		Example:     "/start",
+		Description: "Show this help message with all available commands, or detailed help for a specific command (same as /help)",
+		Usage:       "/start [command]",
+		Example:     "/start preview",
 	},
 	"status": {
 		Command:     "/status",
