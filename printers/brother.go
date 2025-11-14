@@ -227,6 +227,43 @@ func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
 	return fileContent, nil
 }
 
+func (p *Printer) PreviewLabelWithPreset(label string, userIdent int64, preset *config.Preset) ([]byte, error) {
+	draftsFolder := p.config.Printer.DraftsFolder
+
+	// Ensure the drafts folder exists
+	if _, err := os.Stat(draftsFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(draftsFolder, p.config.Printer.GetFolderPermissions()); err != nil {
+			return nil, fmt.Errorf("failed to create drafts folder: %v", err)
+		}
+		logger.Info("Created drafts folder: %s", draftsFolder)
+	}
+
+	// Construct the filePath name based on user identifier (e.g. draft-preset-23479234.png)
+	filePath := fmt.Sprintf("%s/draft-preset-%d.png", draftsFolder, userIdent)
+
+	fontSizeStr := fmt.Sprintf("%d", preset.FontSize)
+
+	var args []string
+	if preset.FontFamily != "" {
+		args = append(args, fontCmdArg, preset.FontFamily)
+	}
+	args = append(args, fontSizeCmdArg, fontSizeStr, textCmdArg, label, writePngCmdArg, filePath)
+
+	output, err := p.exec(args...)
+
+	if err != nil {
+		return nil, fmt.Errorf("error previewing label with preset: %v, output: %s", err, output)
+	}
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading label preview file: %v", err)
+	}
+
+	logger.Info("Label previewed successfully with preset '%s': %s", preset.FontFamily, label)
+	return fileContent, nil
+}
+
 // Shuts down the printer, stopping the auto-shutdown timer, optionally turning off the relay
 func (p *Printer) Close() error {
 	if p.relay == nil {

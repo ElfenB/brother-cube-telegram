@@ -49,6 +49,12 @@ var commandRegistry = map[string]CommandInfo{
 		Usage:       "/preset [preset_name] [text] | /preset (to list presets)",
 		Example:     "/preset kitchen Container A",
 	},
+	"ppreview": {
+		Command:     "/ppreview",
+		Description: "Generate a preview image using a predefined preset",
+		Usage:       "/ppreview [preset_name] [text] | /ppreview (to list presets)",
+		Example:     "/ppreview kitchen Container A",
+	},
 }
 
 // GetRegisteredCommands returns all registered commands
@@ -99,6 +105,7 @@ func GetBot(ctx context.Context) *bot.Bot {
 	registerCommandHandler(b, "preview", bot.MatchTypeCommand, previewHandler)
 	registerCommandHandler(b, "size", bot.MatchTypeCommandStartOnly, sizeHandler)
 	registerCommandHandler(b, "preset", bot.MatchTypeCommandStartOnly, presetHandler)
+	registerCommandHandler(b, "ppreview", bot.MatchTypeCommandStartOnly, ppreviewHandler)
 
 	// Register handler for unknown commands (any command that starts with /)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/", bot.MatchTypePrefix, unknownCommandHandler)
