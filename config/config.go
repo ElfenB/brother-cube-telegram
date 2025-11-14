@@ -18,6 +18,16 @@ type Config struct {
 	Logging LoggingConfig `yaml:"logging"`
 }
 
+// Preset holds configuration for a specific printing preset
+type Preset struct {
+	// Font size for this preset
+	FontSize int `yaml:"font_size"`
+	// Font family/file for this preset
+	FontFamily string `yaml:"font_family"`
+	// Description of the preset
+	Description string `yaml:"description"`
+}
+
 // Holds printer-specific configuration
 type PrinterConfig struct {
 	// Number of retry attempts when connecting to printer
@@ -37,6 +47,9 @@ type PrinterConfig struct {
 
 	// File permissions for created directories (octal)
 	FolderPermissions int `yaml:"folder_permissions"`
+
+	// Named presets for different printing configurations
+	Presets map[string]Preset `yaml:"presets"`
 }
 
 // GPIOConfig holds GPIO-specific configuration
@@ -93,6 +106,23 @@ func (p *PrinterConfig) GetRetryDelay(attemptNumber int) time.Duration {
 // Returns the folder permissions as os.FileMode
 func (p *PrinterConfig) GetFolderPermissions() os.FileMode {
 	return os.FileMode(p.FolderPermissions)
+}
+
+// Returns a preset by name, or nil if not found
+func (p *PrinterConfig) GetPreset(name string) *Preset {
+	if preset, exists := p.Presets[name]; exists {
+		return &preset
+	}
+	return nil
+}
+
+// Returns all available preset names
+func (p *PrinterConfig) GetPresetNames() []string {
+	names := make([]string, 0, len(p.Presets))
+	for name := range p.Presets {
+		names = append(names, name)
+	}
+	return names
 }
 
 // Returns the logger.LogLevel from the string configuration

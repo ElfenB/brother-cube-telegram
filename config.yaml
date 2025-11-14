@@ -11,14 +11,21 @@ printer:
   # Use ~ for home directory or absolute path
   drafts_folder: "~/drafts"
 
-  # Font size for label printing (default: 48)
-  font_size: 48
+  # Font size for label printing (default: 42)
+  font_size: 42
 
   # Base delay in seconds for retries (will be multiplied by attempt number + this value)
   retry_base_delay_seconds: 5
 
   # File permissions for created directories (octal, e.g., 0755)
   folder_permissions: 0755
+
+  # Named presets for different printing configurations
+  presets:
+    kitchen:
+      font_size: 32
+      font_family: "Brussels"
+      description: "Kitchen container labels"
 
 gpio:
   # GPIO pin number for the relay (Raspberry Pi GPIO pin)

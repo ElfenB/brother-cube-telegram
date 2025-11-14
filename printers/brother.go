@@ -179,6 +179,25 @@ func (p *Printer) PrintLabel(label string, fontSize int) error {
 	return nil
 }
 
+func (p *Printer) PrintLabelWithPreset(label string, preset *config.Preset) error {
+	fontSizeStr := fmt.Sprintf("%d", preset.FontSize)
+
+	var args []string
+	if preset.FontFamily != "" {
+		args = append(args, fontCmdArg, preset.FontFamily)
+	}
+	args = append(args, fontSizeCmdArg, fontSizeStr, textCmdArg, label)
+
+	output, err := p.exec(args...)
+
+	if err != nil {
+		return fmt.Errorf("error printing label with font: %v, output: %s", err, output)
+	}
+
+	logger.Info("Label printed successfully with font '%s': %s", preset.FontFamily, label)
+	return nil
+}
+
 func (p *Printer) PreviewLabel(label string, userIdent int64) ([]byte, error) {
 	draftsFolder := p.config.Printer.DraftsFolder
 
