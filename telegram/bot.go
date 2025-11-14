@@ -120,7 +120,15 @@ func GetBot(ctx context.Context) *bot.Bot {
 	return b
 }
 
-// Returns a formatted usage message for a command
+// Returns a formatted help message for a command (for help display, not errors)
+func GetCommandHelpMessage(command string) string {
+	if cmdInfo, exists := commandRegistry[command]; exists {
+		return fmt.Sprintf("ℹ️**%s**\n\n📝 %s\n\n🔧 Usage: %s\n💡 Example: %s", cmdInfo.Command, cmdInfo.Description, cmdInfo.Usage, cmdInfo.Example)
+	}
+	return fmt.Sprintf("❌ Help information not available for /%s", command)
+}
+
+// Returns a formatted usage message for a command (for error scenarios)
 func GetCommandUsageMessage(command string) string {
 	if cmdInfo, exists := commandRegistry[command]; exists {
 		return fmt.Sprintf("❌ Usage: %s\n\nExample: %s\n\n%s", cmdInfo.Usage, cmdInfo.Example, cmdInfo.Description)

@@ -49,9 +49,9 @@ func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		commandName = strings.TrimPrefix(commandName, "/")
 
 		logger.Debug("Specific help requested for command: %s", commandName)
-
+		
 		// Send specific command help
-		helpText := GetCommandUsageMessage(commandName)
+		helpText := GetCommandHelpMessage(commandName)
 		_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   helpText,
