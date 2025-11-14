@@ -3,6 +3,7 @@ package telegram
 import (
 	"brother-cube-telegram/logger"
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/go-telegram/bot"
@@ -29,7 +30,7 @@ func unknownCommandHandler(ctx context.Context, b *bot.Bot, update *models.Updat
 	logger.Info("Unknown command received: %s from %s", command, update.Message.From.Username)
 
 	// Send error message for unknown commands
-	helpText := `❌ Unknown command: ` + command
+	helpText := fmt.Sprintf("❌ Unknown command: %s\n\nUse /help to see all available commands.", command)
 
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
