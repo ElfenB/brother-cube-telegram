@@ -23,7 +23,7 @@ printer:
   # Named presets for different printing configurations
   presets:
     kitchen:
-      font_size: 32
+      font_size: 30
       font_family: "Brussels"
       description: "Kitchen container labels"
 

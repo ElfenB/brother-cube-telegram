@@ -51,3 +51,12 @@ To activate the service on boot, run:
 ```bash
 task activate-service
 ```
+
+## Other
+
+To use custom fonts, simply install them on the system. On RaspberryPi-OS, this can be done by copying the `*.ttf` files in the fonts folder:
+
+```bash
+cd fonts
+sudo mv <your-font-name>/*.ttf /usr/share/fonts/truetype/<your-font-name>
+```
